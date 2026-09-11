@@ -1,7 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bot Deployment Schedule</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
+ 
   :root{
     --bg: #0a0d10;
     --bg-grid: #10151a;
@@ -17,9 +22,9 @@
     --warn-dim: #4a3a1a;
     --done: #5b6470;
   }
-
+ 
   *{ box-sizing: border-box; }
-
+ 
   body{
     margin: 0;
     min-height: 100vh;
@@ -34,7 +39,7 @@
     padding: clamp(20px, 4vw, 56px) clamp(16px, 5vw, 64px);
     padding-block: clamp(28px, 5vh, 64px);
   }
-
+ 
   .frame{
     width: 100%;
     max-width: 1180px;
@@ -44,7 +49,7 @@
     flex: 1;
     justify-content: center;
   }
-
+ 
   header{
     display: flex;
     align-items: baseline;
@@ -54,7 +59,7 @@
     border-bottom: 1px solid var(--hair);
     padding-bottom: clamp(14px, 2.2vh, 22px);
   }
-
+ 
   .eyebrow{
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-size: clamp(0.72rem, 1vw, 0.95rem);
@@ -62,7 +67,7 @@
     text-transform: uppercase;
     color: var(--accent);
   }
-
+ 
   h1{
     margin: 4px 0 0;
     font-size: clamp(1.6rem, 3.4vw, 2.6rem);
@@ -70,7 +75,7 @@
     letter-spacing: -0.01em;
     text-wrap: balance;
   }
-
+ 
   .clock{
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
@@ -80,13 +85,13 @@
     line-height: 1.5;
   }
   .clock .today-label{ color: var(--text-faint); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.78em; }
-
+ 
   .rows{
     display: flex;
     flex-direction: column;
     gap: clamp(10px, 1.6vh, 16px);
   }
-
+ 
   .row{
     position: relative;
     display: grid;
@@ -110,7 +115,7 @@
   .row[data-status="today"]::before{ background: var(--warn); }
   .row[data-status="done"]::before{ background: var(--done); }
   .row[data-status="upcoming"]::before{ background: var(--accent-dim); }
-
+ 
   .idx{
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-size: clamp(1.8rem, 4.2vw, 3.1rem);
@@ -121,7 +126,7 @@
   }
   .row[data-status="today"] .idx{ color: var(--warn); }
   .row[data-status="upcoming"] .idx{ color: var(--accent); }
-
+ 
   .label-block{ min-width: 0; }
   .label{
     font-size: clamp(1.3rem, 2.6vw, 1.9rem);
@@ -135,14 +140,14 @@
     color: var(--text-dim);
     letter-spacing: 0.04em;
   }
-
+ 
   .meta{
     display: flex;
     align-items: center;
     gap: clamp(14px, 2.6vw, 30px);
     justify-self: end;
   }
-
+ 
   .date{
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
@@ -151,7 +156,7 @@
     text-align: right;
     white-space: nowrap;
   }
-
+ 
   .badge{
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-size: clamp(0.72rem, 1vw, 0.88rem);
@@ -176,7 +181,7 @@
   .row[data-status="today"] .badge{ background: rgba(245,166,35,0.14); color: var(--warn); }
   .row[data-status="today"] .badge::before{ animation: pulse 1.8s ease-in-out infinite; }
   .row[data-status="upcoming"] .badge{ background: rgba(79,209,197,0.12); color: var(--accent); }
-
+ 
   @keyframes pulse{
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.45; transform: scale(1.25); }
@@ -184,7 +189,7 @@
   @media (prefers-reduced-motion: reduce){
     .row[data-status="today"] .badge::before{ animation: none; }
   }
-
+ 
   footer{
     display: flex;
     justify-content: space-between;
@@ -197,13 +202,15 @@
     letter-spacing: 0.05em;
     padding-top: clamp(6px, 1.2vh, 12px);
   }
-
+ 
   @media (max-width: 640px){
     .row{ grid-template-columns: 56px 1fr; }
     .meta{ grid-column: 1 / -1; justify-self: start; padding-left: calc(56px + clamp(14px,3vw,36px)); flex-wrap: wrap; }
   }
 </style>
-
+</head>
+<body>
+ 
 <div class="frame">
   <header>
     <div>
@@ -215,50 +222,50 @@
       <div id="clock-date">&mdash;</div>
     </div>
   </header>
-
+ 
   <div class="rows" id="rows"></div>
-
+ 
   <footer>
     <span id="summary">&nbsp;</span>
     <span>Updated live &middot; refreshes at midnight</span>
   </footer>
 </div>
-
+ 
 <script>
   const SCHEDULE = [
     { name: "BOT 8",  date: "2026-09-11" },
     { name: "BOT 9",  date: "2026-09-25" },
     { name: "BOT 10", date: "2026-09-30" },
   ];
-
+ 
   const rowsEl = document.getElementById('rows');
   const clockEl = document.getElementById('clock-date');
   const summaryEl = document.getElementById('summary');
-
+ 
   const DAY_FMT = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-
+ 
   function startOfDay(d){
     const nd = new Date(d);
     nd.setHours(0,0,0,0);
     return nd;
   }
-
+ 
   function dayDiff(a, b){
     return Math.round((startOfDay(a) - startOfDay(b)) / 86400000);
   }
-
+ 
   function render(){
     const now = new Date();
     clockEl.textContent = DAY_FMT.format(now);
-
+ 
     rowsEl.innerHTML = '';
     let nextUpcoming = null;
-
+ 
     SCHEDULE.forEach((item, i) => {
       const d = new Date(item.date + 'T00:00:00');
       const diff = dayDiff(d, now);
       let status, badgeText;
-
+ 
       if (diff === 0){
         status = 'today';
         badgeText = 'Today';
@@ -270,7 +277,7 @@
         badgeText = diff === 1 ? 'In 1 day' : `In ${diff} days`;
         if (nextUpcoming === null) nextUpcoming = item.name;
       }
-
+ 
       const row = document.createElement('div');
       row.className = 'row';
       row.setAttribute('data-status', status);
@@ -287,13 +294,16 @@
       `;
       rowsEl.appendChild(row);
     });
-
+ 
     summaryEl.textContent = nextUpcoming
       ? `Next up: ${nextUpcoming}`
       : 'All deployments complete';
   }
-
+ 
   render();
   // Re-render on the hour so "today"/day-count status stays correct if left projecting.
   setInterval(render, 60 * 1000);
 </script>
+</body>
+</html>
+ 
