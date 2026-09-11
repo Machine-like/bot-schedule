@@ -190,6 +190,29 @@
     .row[data-status="today"] .badge::before{ animation: none; }
   }
  
+  .quote{
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    border-left: 3px solid var(--accent);
+    padding-left: clamp(12px, 2vw, 18px);
+    font-style: italic;
+    font-weight: 600;
+    color: var(--text-dim);
+    font-size: clamp(1rem, 1.9vw, 1.4rem);
+    letter-spacing: -0.01em;
+  }
+  .quote-tag{
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 0.6em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+ 
   footer{
     display: flex;
     justify-content: space-between;
@@ -222,6 +245,8 @@
       <div id="clock-date">&mdash;</div>
     </div>
   </header>
+ 
+  <div class="quote">&ldquo;Get the shit done.&rdquo; <span class="quote-tag">Acciorobotics</span></div>
  
   <div class="rows" id="rows"></div>
  
